@@ -20,8 +20,10 @@ jobs:
       - name: Install dependencies
         shell: pwsh
         run: |
-          vcpkg integrate install
-          vcpkg install ms-gsl wil
+          vcpkg install ms-gsl:x86-windows wil:x86-windows
+          if (-not (Test-Path "C:\vcpkg\installed\x86-windows\include\gsl\gsl")) {
+            throw "Microsoft GSL headers were not installed"
+          }
           
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v2
