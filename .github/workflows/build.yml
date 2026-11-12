@@ -29,31 +29,37 @@ jobs:
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v2
 
-      
       - name: Install ATL for MSVC v142
         shell: pwsh
         run: |
           $vs = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -property installationPath
           $installer = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vs_installer.exe"
 
-          & $installer modify --installPath "$vs" --add Microsoft.VisualStudio.Component.VC.14.29.16.11.ATL --quiet --norestart --wait
+          $args = @(
+            "modify",
+            "--installPath", "$vs",
+            "--add", "Microsoft.VisualStudio.Component.VC.14.29.16.11.ATL",
+            "--quiet",
+            "--norestart",
+            "--nocache"
+          )
 
-          if ($LASTEXITCODE -ne 0) {
-            throw "ATL installation failed: $LASTEXITCODE"
+          for ($i = 1; $i -le 2; $i++) {
+            Write-Host "ATL installation attempt $i"
+            $process = Start-Process -FilePath $installer -ArgumentList $args -Wait -PassThru -WindowStyle Hidden
+            Write-Host "Installer exit code: $($process.ExitCode)"
           }
 
-          $atlInclude = "$vs\VC\Tools\MSVC\14.29.30133\atlmfc\include"
+          $atl = Get-ChildItem "$vs\VC\Tools\MSVC" -Filter atlbase.h -Recurse |
+            Where-Object { $_.FullName -match '\\14\.29\.' } |
+            Select-Object -First 1
 
-          if (-not (Test-Path "$atlInclude\atlbase.h")) {
-            Write-Host "Available ATL files:"
-            Get-ChildItem "$vs\VC" -Filter atlbase.h -Recurse | ForEach-Object {
-              Write-Host $_.FullName
-            }
-            throw "ATL for MSVC 14.29 was not found"
+          if (-not $atl) {
+            throw "ATL for MSVC v142 is still missing"
           }
 
-          Write-Host "Correct ATL found: $atlInclude"
-          "ATL_INCLUDE=$atlInclude" >> $env:GITHUB_ENV
+          Write-Host "Correct ATL found: $($atl.FullName)"
+          "ATL_INCLUDE=$($atl.DirectoryName)" >> $env:GITHUB_ENV
         
       - name: Build Release Win32
         shell: pwsh
