@@ -22,7 +22,10 @@ jobs:
         run: |
           vcpkg integrate install
           vcpkg install ms-gsl wil
-
+          
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+        
       - name: Build Release Win32
         shell: pwsh
         run: |
