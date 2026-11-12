@@ -29,12 +29,20 @@ jobs:
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v2
 
-      - name: Install ATL
+      - name: Install ATL for MSVC v142
         shell: pwsh
         run: |
           $vs = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -property installationPath
           $installer = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vs_installer.exe"
-          & $installer modify --installPath "$vs" --add Microsoft.VisualStudio.Component.VC.ATL --quiet --norestart --wait
+          & $installer modify --installPath "$vs" --add Microsoft.VisualStudio.Component.VC.14.29.16.11.ATL --quiet --norestart --wait
+          if ($LASTEXITCODE -ne 0) {
+            throw "ATL installation failed: $LASTEXITCODE"
+          }
+          $atl = Get-ChildItem "$vs\VC\Tools\MSVC" -Filter atlbase.h -Recurse | Select-Object -First 1
+          if (-not $atl) {
+            throw "atlbase.h was not found after ATL installation"
+          }
+          Write-Host "ATL found: $($atl.FullName)"
         
       - name: Build Release Win32
         shell: pwsh
