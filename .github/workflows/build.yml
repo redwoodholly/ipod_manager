@@ -32,6 +32,8 @@ jobs:
       - name: Build Release Win32
         shell: pwsh
         run: |
+          $env:INCLUDE = "C:\vcpkg\installed\x86-windows\include;$env:INCLUDE"
+          Write-Host "GSL include path: $env:INCLUDE"
           msbuild vc16/ipod_manager.sln /m /p:Configuration=Release /p:Platform=Win32
 
       - name: Locate build outputs
