@@ -21,6 +21,7 @@ jobs:
         shell: pwsh
         run: |
           vcpkg install ms-gsl:x86-windows wil:x86-windows
+          vcpkg integrate install
           if (-not (Test-Path "C:\vcpkg\installed\x86-windows\include\gsl\gsl")) {
             throw "Microsoft GSL headers were not installed"
           }
