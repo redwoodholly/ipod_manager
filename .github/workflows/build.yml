@@ -1,0 +1,55 @@
+
+name: Build iPod Manager
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - work/m4b-chapters
+
+jobs:
+  build:
+    runs-on: windows-2019
+
+    steps:
+      - name: Checkout repository and submodules
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install dependencies
+        shell: pwsh
+        run: |
+          vcpkg integrate install
+          vcpkg install ms-gsl wil
+
+      - name: Build Release Win32
+        shell: pwsh
+        run: |
+          msbuild vc16/ipod_manager.sln /m /p:Configuration=Release /p:Platform=Win32
+
+      - name: Locate build outputs
+        shell: pwsh
+        run: |
+          $files = Get-ChildItem -Path . -Filter foo_dop.dll -Recurse
+          if (-not $files) {
+            throw "foo_dop.dll was not produced"
+          }
+          New-Item -ItemType Directory -Force -Path package | Out-Null
+          foreach ($file in $files) {
+            Copy-Item $file.FullName package/
+          }
+          $crypt = Get-ChildItem -Path . -Filter iTunesCrypt.dll -Recurse
+          foreach ($file in $crypt) {
+            Copy-Item $file.FullName package/
+          }
+          Compress-Archive -Path package/* -DestinationPath foo_dop-win32.zip -Force
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: foo_dop-win32
+          path: foo_dop-win32.zip
+          if-no-files-found: error
+
+          
