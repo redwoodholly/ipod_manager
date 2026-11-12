@@ -28,6 +28,13 @@ jobs:
           
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v2
+
+      - name: Install ATL
+        shell: pwsh
+        run: |
+          $vs = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -property installationPath
+          $installer = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vs_installer.exe"
+          & $installer modify --installPath "$vs" --add Microsoft.VisualStudio.Component.VC.ATL --quiet --norestart --wait
         
       - name: Build Release Win32
         shell: pwsh
