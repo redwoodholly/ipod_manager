@@ -875,7 +875,34 @@ void g_get_mp4_info(service_ptr_t<file> p_file, mp4_info & p_info /*out*/, abort
 		};
 	};
 }
+bool g_get_mp4_audio_duration(const char * path, double & p_duration, abort_callback & p_abort)
+{
+    p_duration = 0;
+    service_ptr_t<file> file, fileCached;
+    filesystem::g_open_read(file, path, p_abort);
+    file_cached::g_create(fileCached, file, p_abort, 8*1024*1024);
 
+    mp4_info info;
+    g_get_mp4_info(fileCached, info, p_abort);
+
+    for (t_size i = 0, count = info.trak_entries.get_count(); i < count; i++)
+    {
+        trak_t & trak = info.trak_entries[i];
+        if (trak.m_handler_type != 'soun' || !trak.m_timescale || !trak.m_mp4a_entry.m_samplerate_valid)
+            continue;
+
+        t_uint64 total_ticks = 0;
+        for (t_size j = 0, jcount = trak.m_stts_entries.get_count(); j < jcount; j++)
+            total_ticks += (t_uint64)trak.m_stts_entries[j].sample_count * trak.m_stts_entries[j].sample_delta;
+
+        if (total_ticks)
+        {
+            p_duration = (double)total_ticks / trak.m_timescale;
+            return true;
+        }
+    }
+    return false;
+}
 bool g_get_itunes_chapters_mp4(service_ptr_t<file> p_file, itunesdb::chapter_list & p_chapter_list /*out*/, abort_callback & p_abort)
 {
 	bool ret = false;
