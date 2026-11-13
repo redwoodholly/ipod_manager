@@ -261,6 +261,27 @@ void ipod_add_files::run (ipod_device_ptr_ref_t p_ipod, const pfc::list_base_con
 			count_nodups++;*/
 		}
 	}
+	// Treat all chapters of one M4B file as a single audiobook.
+for (t_size a = 0; a < count; a++)
+{
+    if (mask[a]) continue;
+    pfc::string_extension ext_a(items[a]->get_path());
+    if (stricmp_utf8(ext_a, "m4b")) continue;
+
+    for (t_size b = a + 1; b < count; b++)
+    {
+        if (mask[b]) continue;
+        pfc::string_extension ext_b(items[b]->get_path());
+
+        if (!stricmp_utf8(ext_b, "m4b") &&
+            !stricmp_utf8(items[a]->get_path(), items[b]->get_path()))
+        {
+            mask.set(b, true);
+            identities[b] = a;
+            count_nodups--;
+        }
+    }
+}
 	//if (count_nodups) count_nodups++;
 
 	FILETIME ft;
