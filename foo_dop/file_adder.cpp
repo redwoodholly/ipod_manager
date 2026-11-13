@@ -261,6 +261,27 @@ void ipod_add_files::run (ipod_device_ptr_ref_t p_ipod, const pfc::list_base_con
 			count_nodups++;*/
 		}
 	}
+	// Treat all chapters of one M4B file as a single audiobook.
+for (t_size a = 0; a < count; a++)
+{
+    if (mask[a]) continue;
+    pfc::string_extension ext_a(items[a]->get_path());
+    if (stricmp_utf8(ext_a, "m4b")) continue;
+
+    for (t_size b = a + 1; b < count; b++)
+    {
+        if (mask[b]) continue;
+        pfc::string_extension ext_b(items[b]->get_path());
+
+        if (!stricmp_utf8(ext_b, "m4b") &&
+            !stricmp_utf8(items[a]->get_path(), items[b]->get_path()))
+        {
+            mask.set(b, true);
+            identities[b] = a;
+            count_nodups--;
+        }
+    }
+}
 	//if (count_nodups) count_nodups++;
 
 	FILETIME ft;
@@ -343,6 +364,7 @@ void ipod_add_files::run (ipod_device_ptr_ref_t p_ipod, const pfc::list_base_con
 					bool m4r = !stricmp_utf8(extension, "m4r");
 					bool m4v = !stricmp_utf8(extension, "m4v");
 					bool m4a = !stricmp_utf8(extension, "m4a");
+					bool m4b = !stricmp_utf8(extension, "m4b");
 					//bool video = false;
 					t_uint32 mediatype = 0;
 					{
@@ -375,7 +397,7 @@ void ipod_add_files::run (ipod_device_ptr_ref_t p_ipod, const pfc::list_base_con
 					}
 					bool b_is_video = (mediatype & (t_track::type_music_video|t_track::type_tv_show|t_track::type_video)) != 0;
 					bool b_supported = g_is_file_supported(items[i].get_ptr()) && info.info_get_int("samplerate") <= 48000;
-					if (items[i]->get_subsong_index() && (b_supported || (reffile && g_is_file_supported(reffile)) ))
+					if (items[i]->get_subsong_index() && !m4b && (b_supported || (reffile && g_is_file_supported(reffile)) ))
 						throw pfc::exception("Files with chapters are not currently supported by foo_dop");
 					if (!b_supported)
 					{
@@ -557,7 +579,7 @@ void ipod_add_files::run (ipod_device_ptr_ref_t p_ipod, const pfc::list_base_con
 
 					pfc::rcptr_t<t_track> track = pfc::rcnew_t<t_track>();
 					{
-						if (mp4 || m4a)
+						if (mp4 || m4a || m4b)
 						{
 							try {
 							g_get_itunes_chapters_mp4(items[i]->get_path(), track->m_chapter_list, p_abort);
