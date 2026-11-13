@@ -558,7 +558,7 @@ void ipod_add_files::run (ipod_device_ptr_ref_t p_ipod, const pfc::list_base_con
 
 					pfc::rcptr_t<t_track> track = pfc::rcnew_t<t_track>();
 					{
-						if (mp4 || m4a)
+						if (mp4 || m4a || m4b)
 						{
 							try {
 							g_get_itunes_chapters_mp4(items[i]->get_path(), track->m_chapter_list, p_abort);
