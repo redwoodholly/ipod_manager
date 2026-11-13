@@ -343,6 +343,7 @@ void ipod_add_files::run (ipod_device_ptr_ref_t p_ipod, const pfc::list_base_con
 					bool m4r = !stricmp_utf8(extension, "m4r");
 					bool m4v = !stricmp_utf8(extension, "m4v");
 					bool m4a = !stricmp_utf8(extension, "m4a");
+					bool m4b = !stricmp_utf8(extension, "m4b");
 					//bool video = false;
 					t_uint32 mediatype = 0;
 					{
