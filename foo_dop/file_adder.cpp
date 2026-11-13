@@ -376,7 +376,7 @@ void ipod_add_files::run (ipod_device_ptr_ref_t p_ipod, const pfc::list_base_con
 					}
 					bool b_is_video = (mediatype & (t_track::type_music_video|t_track::type_tv_show|t_track::type_video)) != 0;
 					bool b_supported = g_is_file_supported(items[i].get_ptr()) && info.info_get_int("samplerate") <= 48000;
-					if (items[i]->get_subsong_index() && (b_supported || (reffile && g_is_file_supported(reffile)) ))
+					if (items[i]->get_subsong_index() && !m4b && (b_supported || (reffile && g_is_file_supported(reffile)) ))
 						throw pfc::exception("Files with chapters are not currently supported by foo_dop");
 					if (!b_supported)
 					{
