@@ -212,7 +212,7 @@ namespace ipod
 						try
 						{
 							pfc::string_extension ext(m_tracks[i]->location);
-							if (!stricmp_utf8(ext, "mp4") || !stricmp_utf8(ext, "m4a"))
+							if (!stricmp_utf8(ext, "mp4") || !stricmp_utf8(ext, "m4a") || !stricmp_utf8(ext, "m4b"))
 							{
 								g_get_itunes_chapters_mp4(m_handles[i]->get_path(), m_tracks[i]->m_chapter_list, p_abort);
 								itunesdb::chapter_writer(&stream_writer_memblock_ref(m_tracks[i]->do_chapter_data)).write(m_tracks[i]->m_chapter_list, p_abort);
