@@ -736,7 +736,19 @@ for (t_size a = 0; a < count; a++)
 				}
 				else
 					processing_data[i].m_track->set_from_metadb_handle(items[i], items[i]->get_location(), processing_data[i].m_info_source, items[i]->get_filestats(), p_mappings);
+pfc::string_extension source_ext(items[i]->get_path());
+if (!stricmp_utf8(source_ext, "m4b"))
+{
+    double full_duration = 0;
+    if (g_get_mp4_audio_duration(items[i]->get_path(), full_duration, p_abort))
+    {
+        processing_data[i].m_track->length = (t_uint32)(full_duration * 1000.0 + 0.5);
 
+        t_uint32 sample_rate = processing_data[i].m_track->samplerate >> 16;
+        if (sample_rate)
+            processing_data[i].m_track->samplecount = (t_uint64)(full_duration * sample_rate + 0.5);
+    }
+}
 				m_results[i].b_added = true;
 				count_added++;
 				if (p_mappings.date_added_mode == 0)
