@@ -15,4 +15,5 @@ t_filesize g_get_gapless_sync_frame_mp3_v2(service_ptr_t<file> p_file, abort_cal
 bool g_get_gapless_mp4(const char * path, t_uint32 & delay, t_uint32 & padding, abort_callback & p_abort);
 bool g_get_gapless_mp4(const char * path, t_uint32 & delay, t_uint32 & padding);
 bool g_get_itunes_chapters_mp4(const char * path, itunesdb::chapter_list & p_out, abort_callback & p_abort);
+bool g_get_mp4_audio_duration(const char * path, double & p_duration, abort_callback & p_abort);
 #endif
